@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "es2018",
+    "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "sourceMap": false,
+    "outDir": "./bin",
+    "declaration": true,
+    "lib": [
+      "es2020",
+      "dom",
+      "dom.iterable"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
+  ]
+}
