@@ -11,10 +11,9 @@ It will not function against the best of things.
 
 We want to be able to manage input video into the chrome instance started by playwright.
 
-We do so by starting this process with a configured v4l2loopback device; and require ffmpeg to be 
-available on the system.
+We do so by starting this process with reference to a v4l2loopback device; and require ffmpeg to be available on the system.
 
-We then have commands that start
+We then have commands that update a specific image file which then turns into updates to the video stream controlled by the test framework.
 
 ## Running
 ---
@@ -58,3 +57,6 @@ To define a new set of actions (eg: relating to settings):
     The following actions were found:
     login, logout, enable_dehydrated_device, idle, wait, exit, reload, clear_idb_storage, create_room, open_room, accept_invite, send_message, verify_message_in_timeline, verify_last_message_is_utd
     ```
+## Testing against trafficlight
+
+Trafficlight is a bit oversized for testing adapter changes. There are small python scripts that fake a trafficlight endpoint enough to test specific flows of the adapter; probably easier to use that than have to restart entire test cases in trafficlight repeatedly.
