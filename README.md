@@ -3,10 +3,6 @@
 
 At the moment, this is a work in progress to see if we can use trafficlight to test element call.
 
-It will not function against the best of things.
-
-
-
 ## V4L2loopback requirements
 
 We want to be able to manage input video into the chrome instance started by playwright.
