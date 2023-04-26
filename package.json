@@ -8,7 +8,7 @@
     "scripts": {
         "lint": "yarn lint:types && yarn lint:js",
         "lint:js": "eslint . --ext .ts",
-        "lint:js-fix": "eslint --fix ./src/*",
+        "lint:js-fix": "eslint --ext .ts --fix ./src/*",
         "lint:types": "tsc --noEmit",
         "test:trafficlight": "rm -rf ./bin && tsc && node bin/src/index.js",
         "docker-build": "rm -rf ./bin && tsc",

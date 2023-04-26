@@ -13,10 +13,10 @@ module.exports = {
         await context.clear_permissions();
 
         const permissions = [];
-        if (data['camera'] == "true") {
+        if (data["camera"] == "true") {
            permissions.push("camera");
         }
-        if (data['audio'] == "true") {
+        if (data["audio"] == "true") {
            permissions.push("microphone");
         }
         await context.grant_permissions(permissions);

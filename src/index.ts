@@ -24,7 +24,7 @@ import { addActionsToClient } from "./populate";
 async function start() {
     console.log("Starting Element Call trafficlight adapter");
     const headless = process.env.HEADLESS == "true" || false;
-    await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE || trafficlightConfig['v4l2loopback-device']);
+    await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE || trafficlightConfig["v4l2loopback-device"]);
     const playwrightObjects = await getPlaywrightPage(headless);
     const { page } = playwrightObjects;
 
@@ -75,24 +75,24 @@ I'm having problems with something not tidying up cleanly after the
 async function beginffmpeg(v4l2loopbackDevice:string) {
     // setup initial file correctly. 
     copyFile("video/images/initial.png", "video/images/target.png");
-    const ffmpeg = "/usr/bin/ffmpeg"
+    const ffmpeg = "/usr/bin/ffmpeg";
     const args = ["-loglevel", "warning", "-cpucount", "1", "-re", "-framerate", "1", "-loop", "1", "-i", "video/images/target.png", "-vf", "format=yuv420p", "-fpsmax", "1", "-f", "v4l2", v4l2loopbackDevice];
     console.log(`Spawning ${ffmpeg} ${args}`);
     const childProcess = spawn(ffmpeg, args);
     
-    childProcess.stdout.on('data', (data) => {
+    childProcess.stdout.on("data", (data) => {
         console.log(`ffmpeg(stdout): ${data}`);
     });
-    childProcess.stderr.on('data', (data) => {
+    childProcess.stderr.on("data", (data) => {
         console.log(`ffmpeg(stderr): ${data}`);
     });
-    childProcess.on('close', (code) => { 
+    childProcess.on("close", (code) => { 
         console.log(`ffmpeg exit with ${code}`);
     });
-    childProcess.on('error', (err) => {
+    childProcess.on("error", (err) => {
         console.log(`ffmpeg launch error ${err}`);
     });
-    return childProcess
+    return childProcess;
 }
 
 async function getPlaywrightPage(headless:boolean) {
@@ -100,11 +100,11 @@ async function getPlaywrightPage(headless:boolean) {
 //        '--use-fake-device-for-media-stream',
 //        '--use-file-for-fake-video-capture=/home/michaelk/work/trafficlight-adapter-element-call/video/video.mjpeg'
 //          '--auto-select-desktop-capture-source=Element Call'
-          '--auto-select-tab-capture-source-by-title=BBC'
+          "--auto-select-tab-capture-source-by-title=BBC"
     ]
     });
     const context = await browser.newContext();
-    context.grantPermissions(['microphone','camera']);
+    context.grantPermissions(["microphone","camera"]);
     const page = await context.newPage();
     const screenshare_page = await context.newPage();
     screenshare_page.goto("https://bbc.co.uk/");

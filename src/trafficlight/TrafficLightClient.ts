@@ -115,7 +115,7 @@ export class TrafficLightClient {
             }
             if (result) {
 		var body;
-                if (typeof result === 'string') {
+                if (typeof result === "string") {
                     // wrap in small json body
                     body = JSON.stringify({ response: result });
                 } else {

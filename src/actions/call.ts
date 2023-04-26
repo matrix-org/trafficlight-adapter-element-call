@@ -25,7 +25,7 @@ module.exports = {
         return "incall_screenshot";
     },
     "get_call_data": async ({ page, data}: { page: Page, data: any }) => {
-        const videos = []
+        const videos = [];
         for (const video of await page.getByTestId("videoTile").all()) {
             const caption = await video.getByTestId("videoTile_caption").textContent();
             const muted = await video.getByTestId("videoTile_muted").count() != 0;
