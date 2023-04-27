@@ -1,4 +1,3 @@
 {
-    "element-call-instance-url": "http://localhost:4173",
-    "v4l2loopback-device": "/dev/video11"
+    "element-call-instance-url": "http://localhost:4173"
 }

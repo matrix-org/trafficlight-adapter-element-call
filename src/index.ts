@@ -24,12 +24,12 @@ import { addActionsToClient } from "./populate";
 async function start() {
     console.log("Starting Element Call trafficlight adapter");
     const headless = process.env.HEADLESS == "true" || false;
-    await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE || trafficlightConfig["v4l2loopback-device"]);
+    await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE);
     const playwrightObjects = await getPlaywrightPage(headless);
-    const { page } = playwrightObjects;
+    const { page, context } = playwrightObjects;
 
     const trafficlightUrl = process.env.TRAFFICLIGHT_URL || "http://127.0.0.1:5000";
-    const client = new ElementCallTrafficlightClient(trafficlightUrl);
+    const client = new ElementCallTrafficlightClient(trafficlightUrl, page, context);
     await addActionsToClient(client, playwrightObjects);
     console.log("\nThe following actions were found:\n", client.availableActions.join(", "));
     await client.register();
@@ -40,9 +40,12 @@ async function start() {
         // so block for 3 seconds as a temp fix
         await new Promise(r => setTimeout(r, 3000));
         await page.goto(elementCallURL);
+        const mediaDevices = await page.evaluate(async () => {return await navigator.mediaDevices.enumerateDevices();});
+        console.log(mediaDevices);
     }
     catch (e) {
         console.error(e);
+        await context.close();
     }
 }
 
@@ -74,9 +77,10 @@ I'm having problems with something not tidying up cleanly after the
 */
 async function beginffmpeg(v4l2loopbackDevice:string) {
     // setup initial file correctly. 
-    copyFile("video/images/initial.png", "video/images/target.png");
+    copyFile("video/images/initial.png", "video/images/target0.png");
+    copyFile("video/images/initial.png", "video/images/target1.png");
     const ffmpeg = "/usr/bin/ffmpeg";
-    const args = ["-loglevel", "warning", "-cpucount", "1", "-re", "-framerate", "1", "-loop", "1", "-i", "video/images/target.png", "-vf", "format=yuv420p", "-fpsmax", "1", "-f", "v4l2", v4l2loopbackDevice];
+    const args = ["-loglevel", "warning", "-r", "1","-re", "-loop", "1", "-i", "video/images/target%01d.png", "-vf", "realtime,format=yuv420p", "-f", "v4l2", v4l2loopbackDevice];
     console.log(`Spawning ${ffmpeg} ${args}`);
     const childProcess = spawn(ffmpeg, args);
     
@@ -92,22 +96,29 @@ async function beginffmpeg(v4l2loopbackDevice:string) {
     childProcess.on("error", (err) => {
         console.log(`ffmpeg launch error ${err}`);
     });
+
+    await new Promise(f => setTimeout(f, 5000));
     return childProcess;
 }
 
 async function getPlaywrightPage(headless:boolean) {
-    const browser = await playwright.chromium.launch({headless: headless, args:  [
-//        '--use-fake-device-for-media-stream',
+    
+    const browser = await playwright.chromium.launch({headless: headless,
+         args:  [
 //        '--use-file-for-fake-video-capture=/home/michaelk/work/trafficlight-adapter-element-call/video/video.mjpeg'
 //          '--auto-select-desktop-capture-source=Element Call'
-          "--auto-select-tab-capture-source-by-title=BBC"
+          "--auto-select-tab-capture-source-by-title=BBC",
+          "--enable-logging",
+          "--log-file=/video/chrome.log"
     ]
     });
-    const context = await browser.newContext();
+    const context = await browser.newContext({ recordVideo: { 'dir': '/videos' } });
     context.grantPermissions(["microphone","camera"]);
     const page = await context.newPage();
-    const screenshare_page = await context.newPage();
-    screenshare_page.goto("https://bbc.co.uk/");
+    // Listen for all console logs for our test page.
+    page.on('console', msg => console.log("PP: " + msg.text()));
+//    const screenshare_page = await context.newPage();
+ //   await screenshare_page.goto("https://bbc.co.uk/");
     return {browser, context, page};
 }
 

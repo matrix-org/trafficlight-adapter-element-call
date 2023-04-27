@@ -15,7 +15,6 @@ module.exports = {
     },
 
     "lobby_join": async ({ page, data }: { page: Page, data: any }) => {
-        await page.getByTestId("preview_video").screenshot({ path: "preview_video.png" });
         await page.getByTestId("lobby_joinCall").click();
         return "lobby_join";
     },

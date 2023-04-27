@@ -15,10 +15,11 @@ limitations under the License.
 */
 
 import { TrafficLightClient } from "./TrafficLightClient";
+import { BrowserContext, Page} from "playwright"; 
 
 export class ElementCallTrafficlightClient extends TrafficLightClient {
-    constructor(trafficLightServerURL: string) {
-        super(trafficLightServerURL);
+    constructor(trafficLightServerURL: string, page: Page, context: BrowserContext) {
+        super(trafficLightServerURL, page, context);
     }
 
     async register(): Promise<void> {

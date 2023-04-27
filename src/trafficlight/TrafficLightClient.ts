@@ -16,7 +16,7 @@ limitations under the License.
 
 import fetch from "node-fetch";
 import * as crypto from "crypto";
-
+import { BrowserContext, Page } from "playwright-core";
 type PollData = {
     action: string;
     data: Record<string, any>;
@@ -57,6 +57,8 @@ export class TrafficLightClient {
 
     constructor(
         private readonly trafficLightServerURL: string,
+        private readonly page: Page,
+        private readonly context: BrowserContext,
         protected readonly actionMap: ActionMap = new ActionMap(),
     ) {}
 
@@ -83,57 +85,68 @@ export class TrafficLightClient {
 
     async start() {
         let p1, p2;
-        while (true) {
-            const pollResponse = await fetch(this.pollUrl);
-            if (pollResponse.status !== 200) {
-                throw new Error(`poll failed with ${pollResponse.status}`);
-            }
-            const pollData = await pollResponse.json() as PollData;
-            console.log(`* Trafficlight asked to execute action "${pollData.action}", `
-                       +`data = ${JSON.stringify(pollData.data)}:`);
-            if (pollData.action === "login" && !p1) {
-                p1 = performance.now();
-            }
-            let result: Awaited<ReturnType<ActionCallback>>;
-            try {
-                const { action, data } = pollData;
-                const callback = this.actionMap.get(action);
-                if (!callback) {
-                    console.log("\tWARNING: unknown action ", action);
-                    continue;
+        try {
+            while (true) {
+                const pollResponse = await fetch(this.pollUrl);
+                if (pollResponse.status !== 200) {
+                    throw new Error(`poll failed with ${pollResponse.status}`);
                 }
-                console.log(`\tAction for "${action}" found in action-map  ✔`);
-                result = await callback(data, this);
-            } catch (err) {
-                console.error(err);
-                result = "error";
-            }
-            if (pollData.action === "exit") {
-                p2 = performance.now();
-                console.log("Total time for login --> complete is", p2 - p1);
-                return;
-            }
-            if (result) {
-		var body;
-                if (typeof result === "string") {
-                    // wrap in small json body
-                    body = JSON.stringify({ response: result });
-                } else {
-                    // assume contains a fully featured object to return
-                    body = JSON.stringify( result );
+                const pollData = await pollResponse.json() as PollData;
+                console.log(`* Trafficlight asked to execute action "${pollData.action}", `
+                           +`data = ${JSON.stringify(pollData.data)}:`);
+                if (pollData.action === "login" && !p1) {
+                    p1 = performance.now();
                 }
-                const respondResponse = await fetch(this.respondUrl, {
-                    method: "POST",
-                    body, 
-                    headers: {
-                        "Accept": "application/json",
-                        "Content-Type": "application/json",
-                    },
-                });
-                if (respondResponse.status !== 200) {
-                    throw new Error(`respond failed with ${respondResponse.status}`);
+                let result: Awaited<ReturnType<ActionCallback>>;
+                try {
+                    const { action, data } = pollData;
+                    const callback = this.actionMap.get(action);
+                    if (!callback) {
+                        console.log("\tWARNING: unknown action ", action);
+                        continue;
+                    }
+                    console.log(`\tAction for "${action}" found in action-map  ✔`);
+                    result = await callback(data, this);
+                } catch (err) {
+                    console.error(err);
+                    try {
+                        await this.page.screenshot({ "path": "error_snapshot.png" } );
+                        await this.context.close();
+                    } catch (screen_err) {
+                        console.error(screen_err);
+                    }
+                    result = "error";
+                }
+                if (pollData.action === "exit") {
+                    p2 = performance.now();
+                    console.log("Total time for login --> complete is", p2 - p1);
+                    return;
+                }
+                if (result) {
+    		var body;
+                    if (typeof result === "string") {
+                        // wrap in small json body
+                        body = JSON.stringify({ response: result });
+                    } else {
+                        // assume contains a fully featured object to return
+                        body = JSON.stringify( result );
+                    }
+                    const respondResponse = await fetch(this.respondUrl, {
+                        method: "POST",
+                        body, 
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    if (respondResponse.status !== 200) {
+                        throw new Error(`respond failed with ${respondResponse.status}`);
+                    }
                 }
             }
+        } finally {
+            console.log("Should close context here if we had a reference");
+            //context.close();
         }
     }
 
