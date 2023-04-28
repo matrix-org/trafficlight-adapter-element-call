@@ -112,7 +112,7 @@ async function getPlaywrightPage(headless:boolean) {
           "--log-file=/video/chrome.log"
     ]
     });
-    const context = await browser.newContext({ recordVideo: { 'dir': '/videos' } });
+    const context = await browser.newContext({ recordVideo: { 'dir': '/video' } });
     context.grantPermissions(["microphone","camera"]);
     const page = await context.newPage();
     // Listen for all console logs for our test page.

@@ -78,13 +78,10 @@ modprobe v4l2loopback $MODULE_OPTIONS
 
 # Run the docker containers:
 
-docker run -it --device /dev/video11 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video11 trafficlight-adapter-element-call:main /bin/bash
-docker run -it --device /dev/video12 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video12 trafficlight-adapter-element-call:main /bin/bash
-docker run -it --device /dev/video13 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 trafficlight-adapter-element-call:main /bin/bash
 
-Then start xvfb-run yarn run docker-run in each container.
-
-# For some reason, i have yet to discern, running them directly seems to just hang waiting for ... something. TODO tomorrow, that one :)
+docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video11 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video11 trafficlight-adapter-element-call:main
+docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video12 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video12 trafficlight-adapter-element-call:main
+docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video13 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 trafficlight-adapter-element-call:main
 
 You now have 3 of these running on your machine which can step through a TL test.
 
