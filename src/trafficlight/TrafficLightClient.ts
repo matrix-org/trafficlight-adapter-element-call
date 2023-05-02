@@ -125,29 +125,30 @@ export class TrafficLightClient {
                     return;
                 }
                 if (result) {
-    		var body;
+                    var body;
                     if (typeof result === "string") {
                         // wrap in small json body
                         body = JSON.stringify({ response: result });
                     } else  {
                         body = JSON.stringify( result );
-                        // TODO: refactor this into processing a tuple returned from the call.
                         // TODO: extract this upload into a method call.
+                        // also use this extracted method to upload logs and video on exit.
+                        // TODO: refactor this into processing a tuple returned from the call.
                         // optional map of str -> str on the response
-                        const files = result['_upload_files'];
+                        const files = result["_upload_files"];
                         if (files) {
                             for (var file in files) {
                                 const formData = new FormData();
                                 const filestream = fs.createReadStream(file);
-                                formData.append('file', filestream, { contentType: 'application/octet-stream', filename: file });
+                                formData.append("file", filestream, { contentType: "application/octet-stream", filename: file });
                                 const fileResponse = await fetch(this.uploadUrl, {
-                                    method: 'POST',
+                                    method: "POST",
                                     body: formData
                                 });
                                 // At the moment we don't care if we fail to upload
                                 // as the trafficlight server will proceed to error out
                                 // afterwards because it doesn't have the files it needs.
-                                console.log("Uploaded", file, " with response " + fileResponse.status);
+                                console.log(`Uploaded ${file} with response ${ fileResponse.status}`);
 
                             }
                         }
