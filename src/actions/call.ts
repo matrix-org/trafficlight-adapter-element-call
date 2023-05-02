@@ -35,7 +35,7 @@ module.exports = {
             
             const caption = await video.getByTestId("videoTile_caption").textContent();
             const muted = await video.getByTestId("videoTile_muted").count() != 0;
-            const snapshot_name = "snapshot_video_"+offset+"_"+i+".png";
+            const snapshot_name = `snapshot_video_${call_data_request}_${i}.png`;
             await video.getByTestId("videoTile_video").screenshot({ path: snapshot_name });
             // permit indirect mapping of name to filename, if needed.
             files[snapshot_name] = snapshot_name;
