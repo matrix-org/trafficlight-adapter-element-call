@@ -112,11 +112,11 @@ async function getPlaywrightPage(headless:boolean) {
           "--log-file=/video/chrome.log"
     ]
     });
-    const context = await browser.newContext({ recordVideo: { 'dir': '/video' } });
+    const context = await browser.newContext({ recordVideo: { "dir": "/video" } });
     context.grantPermissions(["microphone","camera"]);
     const page = await context.newPage();
     // Listen for all console logs for our test page.
-    page.on('console', msg => console.log("PP: " + msg.text()));
+    page.on("console", msg => console.log("PP: " + msg.text()));
 
     // TODO: reenable screenshare page; create some static html page
     // we can control via similar mechanism to the video changer
