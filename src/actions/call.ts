@@ -1,6 +1,8 @@
 import { Page }  from "playwright";
 
-var offset = 0
+// Each time we get_call_data, increment by one
+// This provides unique and related screenshot names.
+var call_data_request = 0;
 
 module.exports = {
     "create_or_join": async ({ page, data }: { page: Page, data: any }) => {
@@ -23,12 +25,17 @@ module.exports = {
 
     "get_call_data": async ({page, data}: { page: Page, data: any }) => {
         const videos = [];
+      
+        // increment i each screenshot we take
         let i = 0;
+        call_data_request++;
         const files = {};
         for (const video of await page.getByTestId("videoTile").all()) {
+            i++;
+            
             const caption = await video.getByTestId("videoTile_caption").textContent();
             const muted = await video.getByTestId("videoTile_muted").count() != 0;
-            const snapshot_name = "snapshot_video_"+(offset++)+"_"+(i++)+".png";
+            const snapshot_name = "snapshot_video_"+offset+"_"+i+".png";
             await video.getByTestId("videoTile_video").screenshot({ path: snapshot_name });
             // permit indirect mapping of name to filename, if needed.
             files[snapshot_name] = snapshot_name;
