@@ -1,14 +1,13 @@
 
 import { copyFile } from "fs/promises";
-import { rename } from "fs/promises";
 module.exports = {
-    "set_video": async ({data}) => {
+    "set_video_image": async ({data}) => {
         const image = data["image"];
-        // Manage two files here, so ffmpeg stats and reopens repeatedly, rather
-        await copyFile("video/images/" + image + ".png", "video/images/target0-new.png");
-        await copyFile("video/images/" + image + ".png", "video/images/target1-new.png");
-        await rename("video/images/target0-new.png", "video/images/target0.png");
-        await rename("video/images/target1-new.png", "video/images/target1.png");
+        // Manage two files here, so ffmpeg stats and reopens repeatedly, rather        // than when it uses a single file which it loads once.
+
+        // TODO: investigate alternatives to this as it's a bit janky.
+        await copyFile("video/images/" + image + ".png", "video/images/target0.png");
+        await copyFile("video/images/" + image + ".png", "video/images/target1.png");
         return "set_image_done";
     },
 

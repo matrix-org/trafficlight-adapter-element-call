@@ -1,5 +1,7 @@
 import { Page }  from "playwright";
 
+var offset = 0
+
 module.exports = {
     "create_or_join": async ({ page, data }: { page: Page, data: any }) => {
         await page.getByTestId("home_callName").fill(data["callName"]);
@@ -19,21 +21,20 @@ module.exports = {
         return "lobby_join";
     },
 
-    "incall_screenshot": async ({ page, data}: { page: Page, data: any }) => {
-        await page.getByTestId("incall_maximizedVideo").screenshot({ path: "maximized_video.png" });
-        return "incall_screenshot";
-    },
-    "get_call_data": async ({ page, data}: { page: Page, data: any }) => {
+    "get_call_data": async ({page, data}: { page: Page, data: any }) => {
         const videos = [];
+        let i = 0;
+        const files = {};
         for (const video of await page.getByTestId("videoTile").all()) {
             const caption = await video.getByTestId("videoTile_caption").textContent();
             const muted = await video.getByTestId("videoTile_muted").count() != 0;
-            const snapshot_name = "snapshot_video_"+caption+".png";
-            // TODO return to trafficlight as part of the response
+            const snapshot_name = "snapshot_video_"+(offset++)+"_"+(i++)+".png";
             await video.getByTestId("videoTile_video").screenshot({ path: snapshot_name });
+            // permit indirect mapping of name to filename, if needed.
+            files[snapshot_name] = snapshot_name;
             videos.push({caption: caption, muted: muted, snapshot: snapshot_name});
         }
-        return { "response": "get_call_data", "data": { "videos": videos }};
+        return { "response": "get_call_data", "data": { "videos": videos }, "_upload_files": files };
 
     },
 

@@ -15,6 +15,8 @@ limitations under the License.
 */
 
 import fetch from "node-fetch";
+import FormData = require("form-data");
+import fs from "fs";
 import * as crypto from "crypto";
 import { BrowserContext, Page } from "playwright-core";
 type PollData = {
@@ -22,7 +24,7 @@ type PollData = {
     data: Record<string, any>;
 };
 
-type ActionCallback = (data?: Record<string, string>, client?: TrafficLightClient) => Promise<string | void>;
+type ActionCallback = (data?: Record<string, string>, client?: TrafficLightClient) => Promise<string | Record<string, any>>;
 
 export class ActionMap {
     constructor(
@@ -108,7 +110,7 @@ export class TrafficLightClient {
                     console.log(`\tAction for "${action}" found in action-map  ✔`);
                     result = await callback(data, this);
                 } catch (err) {
-                    console.error(err);
+                    console.error("\tERROR: error when performing action. Taking screenshot", err);
                     try {
                         await this.page.screenshot({ "path": "error_snapshot.png" } );
                         await this.context.close();
@@ -127,10 +129,31 @@ export class TrafficLightClient {
                     if (typeof result === "string") {
                         // wrap in small json body
                         body = JSON.stringify({ response: result });
-                    } else {
-                        // assume contains a fully featured object to return
+                    } else  {
                         body = JSON.stringify( result );
+                        // TODO: refactor this into processing a tuple returned from the call.
+                        // TODO: extract this upload into a method call.
+                        // optional map of str -> str on the response
+                        const files = result['_upload_files'];
+                        if (files) {
+                            for (var file in files) {
+                                const formData = new FormData();
+                                const filestream = fs.createReadStream(file);
+                                formData.append('file', filestream, { contentType: 'application/octet-stream', filename: file });
+                                const fileResponse = await fetch(this.uploadUrl, {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                // At the moment we don't care if we fail to upload
+                                // as the trafficlight server will proceed to error out
+                                // afterwards because it doesn't have the files it needs.
+                                console.log("Uploaded", file, " with response " + fileResponse.status);
+
+                            }
+                        }
                     }
+
+                    
                     const respondResponse = await fetch(this.respondUrl, {
                         method: "POST",
                         body, 
@@ -146,7 +169,7 @@ export class TrafficLightClient {
             }
         } finally {
             console.log("Should close context here if we had a reference");
-            //context.close();
+            this.context.close();
         }
     }
 
@@ -163,6 +186,10 @@ export class TrafficLightClient {
     }
     get pollUrl() {
         return `${this.clientBaseUrl}/poll`;
+    }
+
+    get uploadUrl() {
+        return `${this.clientBaseUrl}/upload`;
     }
 
     get respondUrl() {

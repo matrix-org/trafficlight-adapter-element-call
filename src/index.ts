@@ -76,11 +76,13 @@ I'm having problems with something not tidying up cleanly after the
 
 */
 async function beginffmpeg(v4l2loopbackDevice:string) {
-    // setup initial file correctly. 
+
+    // TODO: refactor this to create and use a temporary file
+    // passing that location into "actions/video.ts" for updates
     copyFile("video/images/initial.png", "video/images/target0.png");
     copyFile("video/images/initial.png", "video/images/target1.png");
     const ffmpeg = "/usr/bin/ffmpeg";
-    const args = ["-loglevel", "warning", "-r", "1","-re", "-loop", "1", "-i", "video/images/target%01d.png", "-vf", "realtime,format=yuv420p", "-f", "v4l2", v4l2loopbackDevice];
+    const args = ["-loglevel", "warning", "-stream_loop", "-1", "-r", "1","-re", "-i", "video/images/target%01d.png", "-vf", "realtime,format=yuv420p", "-f", "v4l2", v4l2loopbackDevice];
     console.log(`Spawning ${ffmpeg} ${args}`);
     const childProcess = spawn(ffmpeg, args);
     
@@ -105,8 +107,6 @@ async function getPlaywrightPage(headless:boolean) {
     
     const browser = await playwright.chromium.launch({headless: headless,
          args:  [
-//        '--use-file-for-fake-video-capture=/home/michaelk/work/trafficlight-adapter-element-call/video/video.mjpeg'
-//          '--auto-select-desktop-capture-source=Element Call'
           "--auto-select-tab-capture-source-by-title=BBC",
           "--enable-logging",
           "--log-file=/video/chrome.log"
@@ -117,8 +117,13 @@ async function getPlaywrightPage(headless:boolean) {
     const page = await context.newPage();
     // Listen for all console logs for our test page.
     page.on('console', msg => console.log("PP: " + msg.text()));
-//    const screenshare_page = await context.newPage();
- //   await screenshare_page.goto("https://bbc.co.uk/");
+
+    // TODO: reenable screenshare page; create some static html page
+    // we can control via similar mechanism to the video changer
+    // to detect whcih screenshare we are, and if we're updating.
+
+    // const screenshare_page = await context.newPage();
+    // await screenshare_page.goto("https://trafficlight/utilties/screenshare_page.htm");
     return {browser, context, page};
 }
 
