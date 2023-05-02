@@ -1,3 +1,6 @@
 /node_modules
 /bin
+/video/images/target0.png
+/video/images/target1.png
+
 *.log
