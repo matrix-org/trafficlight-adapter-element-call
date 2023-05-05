@@ -15,11 +15,14 @@ limitations under the License.
 */
 
 import { TrafficLightClient } from "./TrafficLightClient";
-import { BrowserContext, Page} from "playwright"; 
+import { BrowserContext } from "playwright"; 
 
 export class ElementCallTrafficlightClient extends TrafficLightClient {
-    constructor(trafficLightServerURL: string, page: Page, context: BrowserContext) {
-        super(trafficLightServerURL, page, context);
+    private offset = 0;
+    constructor(
+        trafficLightServerURL: string, context: BrowserContext, private readonly elementCallURL: string
+    ) {
+        super(trafficLightServerURL, context);
     }
 
     async register(): Promise<void> {
@@ -31,5 +34,13 @@ export class ElementCallTrafficlightClient extends TrafficLightClient {
 
     get availableActions(): string[] {
         return this.actionMap.actions;
+    }
+
+    async newPage() {
+        const new_page = await this.context.newPage();
+        const prefix = "PP"+(this.offset++)+": ";
+        new_page.on("console", msg => console.log(prefix + msg.text()));
+        await new_page.goto(this.elementCallURL);
+        this.page = new_page;
     }
 }

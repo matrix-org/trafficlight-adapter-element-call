@@ -1,5 +1,5 @@
 import { Page }  from "playwright";
-
+import { ElementCallTrafficlightClient } from "../trafficlight";
 module.exports = {
     "idle": async () => {
         await new Promise(r => setTimeout(r, 5000));
@@ -19,6 +19,17 @@ module.exports = {
     "reload": async ({page}: {page: Page}) => {
         await page.reload();
         return "reloaded";
+    },
+
+    "recreate": async ({ data, page, client }: {data: any, client: ElementCallTrafficlightClient, page: Page}) => {
+        // This currently does not work; the client.newPage() method does not update the `page` property of the client.
+        if (data["unload_hooks"] == "False") {
+            await page.close({ runBeforeUnload: false });
+        } else {
+            await page.close({ runBeforeUnload: true });
+        }
+        await client.newPage();
+        return "closed";
     },
 
     "clear_idb_storage": async ({page}: {page: Page}) => {

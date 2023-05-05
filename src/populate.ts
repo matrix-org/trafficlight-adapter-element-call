@@ -18,12 +18,12 @@ import type { ElementCallTrafficlightClient } from "./trafficlight";
 import glob from "glob";
 import path from "path";
 
-export async function addActionsToClient(client: ElementCallTrafficlightClient, playwrightObjects) {
+export async function addActionsToClient(client: ElementCallTrafficlightClient) {
     const rootPath = path.resolve(__dirname, "./actions");
     glob.sync(`${rootPath}/**/*.js`).forEach(async function( file ) {
         const actions: Record<string, any> = require(path.resolve(file));
         for (const [action, func] of Object.entries(actions)) {
-            client.on(action, async (data, _client) => await func({ ...playwrightObjects, data, client:_client }));
+            client.on(action, async (data, _client) => await func({ data, page: _client.page, context: _client.context, client:_client }));
         }
     });
 
