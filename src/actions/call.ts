@@ -6,24 +6,36 @@ var call_data_request = 0;
 
 module.exports = {
     "create_or_join": async ({ page, data }: { page: Page, data: any }) => {
-        await page.getByTestId("home_callName").fill(data["callName"]);
-        await page.getByTestId("home_displayName").fill(data["displayName"]);
+        await page.getByTestId("home_callName").fill(data["call_name"]);
+        if (data["display_name"]) {
+            await page.getByTestId("home_displayName").fill(data["display_name"]);
+        } else {
+           console.log("no display name required");
+        }
 	await page.getByTestId("home_go").click();
         var is_existing = false;
+
+	const joinExistingRoom = page.getByTestId("home_joinExistingRoom");
+        const lobbyJoinCall = page.getByTestId("lobby_joinCall");
+
+        await Promise.race([
+            joinExistingRoom.waitFor(),
+            lobbyJoinCall.waitFor()
+        ]);
+	
 	if (await page.getByTestId("home_joinExistingRoom").isVisible()) {
             await page.getByTestId("home_joinExistingRoom").click();
             is_existing = true;
         }
-        // await page.getByTestId("call") # assert we get to the next page before returning
         return { "response": "create_or_join", "existing": is_existing };
     },
 
-    "lobby_join": async ({ page, data }: { page: Page, data: any }) => {
+    "lobby_join": async ({ page }: { page: Page } ) => {
         await page.getByTestId("lobby_joinCall").click();
         return "lobby_join";
     },
 
-    "get_call_data": async ({page, data}: { page: Page, data: any }) => {
+    "get_call_data": async ({page}: { page: Page }) => {
         const videos = [];
       
         // increment i each screenshot we take
@@ -45,7 +57,7 @@ module.exports = {
 
     },
 
-    "start_screenshare": async ({ page, data }: { page: Page, data: any }) => {
+    "start_screenshare": async ({ page }: { page: Page }) => {
        await page.getByTestId("incall_screenshare").click();
        return "started_screenshare";
     },

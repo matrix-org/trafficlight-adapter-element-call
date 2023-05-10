@@ -56,13 +56,12 @@ export class ActionMap {
 
 export class TrafficLightClient {
     private uuid: string;
-
+    public page: Page;
     constructor(
         private readonly trafficLightServerURL: string,
-        private readonly page: Page,
-        private readonly context: BrowserContext,
+        public readonly context: BrowserContext,
         protected readonly actionMap: ActionMap = new ActionMap(),
-    ) {}
+    ) { }
 
     protected async doRegister(type: string, data: Record<string, string>): Promise<void> {
         this.uuid = crypto.randomUUID();
@@ -124,6 +123,11 @@ export class TrafficLightClient {
                     console.log("Total time for login --> complete is", p2 - p1);
                     return;
                 }
+                if (pollData.action === "error") {
+                    p2 = performance.now();
+                    console.log("Total time for login --> error is", p2 - p1);
+                    return;
+                }
                 if (result) {
                     var body;
                     if (typeof result === "string") {
@@ -182,6 +186,7 @@ export class TrafficLightClient {
         this.actionMap.off(action);
     }
 
+
     get clientBaseUrl(): string {
         return `${this.trafficLightServerURL}/client/${encodeURIComponent(this.uuid)}`;
     }
@@ -196,4 +201,5 @@ export class TrafficLightClient {
     get respondUrl() {
         return `${this.clientBaseUrl}/respond`;
     }
+
 }

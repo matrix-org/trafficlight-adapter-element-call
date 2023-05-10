@@ -26,21 +26,20 @@ async function start() {
     const headless = process.env.HEADLESS == "true" || false;
     await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE);
     const playwrightObjects = await getPlaywrightPage(headless);
-    const { page, context } = playwrightObjects;
-
+    const { context } = playwrightObjects;
     const trafficlightUrl = process.env.TRAFFICLIGHT_URL || "http://127.0.0.1:5000";
-    const client = new ElementCallTrafficlightClient(trafficlightUrl, page, context);
-    await addActionsToClient(client, playwrightObjects);
+    const elementCallURL = process.env["BASE_APP_URL"] ?? trafficlightConfig["element-call-instance-url"];
+    const client = new ElementCallTrafficlightClient(trafficlightUrl, context, elementCallURL);
+    await addActionsToClient(client);
     console.log("\nThe following actions were found:\n", client.availableActions.join(", "));
     await client.register();
     try {
+        await client.newPage();
         client.start();
-        const elementCallURL = process.env["BASE_APP_URL"] ?? trafficlightConfig["element-call-instance-url"];
         // There's a disconnect that happens after you register, not sure how to properly fix this (?)
         // so block for 3 seconds as a temp fix
         await new Promise(r => setTimeout(r, 3000));
-        await page.goto(elementCallURL);
-        const mediaDevices = await page.evaluate(async () => {return await navigator.mediaDevices.enumerateDevices();});
+        const mediaDevices = await client.page.evaluate(async () => {return await navigator.mediaDevices.enumerateDevices();});
         console.log(mediaDevices);
     }
     catch (e) {
@@ -114,17 +113,10 @@ async function getPlaywrightPage(headless:boolean) {
     });
     const context = await browser.newContext({ recordVideo: { "dir": "/video" } });
     context.grantPermissions(["microphone","camera"]);
-    const page = await context.newPage();
-    // Listen for all console logs for our test page.
-    page.on("console", msg => console.log("PP: " + msg.text()));
-
-    // TODO: reenable screenshare page; create some static html page
-    // we can control via similar mechanism to the video changer
-    // to detect whcih screenshare we are, and if we're updating.
 
     // const screenshare_page = await context.newPage();
     // await screenshare_page.goto("https://trafficlight/utilties/screenshare_page.htm");
-    return {browser, context, page};
+    return {browser, context};
 }
 
 start();
