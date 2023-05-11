@@ -24,27 +24,29 @@ import { addActionsToClient } from "./populate";
 async function start() {
     console.log("Starting Element Call trafficlight adapter");
     const headless = process.env.HEADLESS == "true" || false;
-    await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE);
+    const ffmpeg = await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE);
     const playwrightObjects = await getPlaywrightPage(headless);
-    const { context } = playwrightObjects;
+    const { browser, context } = playwrightObjects;
     const trafficlightUrl = process.env.TRAFFICLIGHT_URL || "http://127.0.0.1:5000";
     const elementCallURL = process.env["BASE_APP_URL"] ?? trafficlightConfig["element-call-instance-url"];
-    const client = new ElementCallTrafficlightClient(trafficlightUrl, context, elementCallURL);
+    const client = new ElementCallTrafficlightClient(trafficlightUrl, context, browser, elementCallURL);
     await addActionsToClient(client);
     console.log("\nThe following actions were found:\n", client.availableActions.join(", "));
     await client.register();
     try {
         await client.newPage();
-        client.start();
+        const promise = client.start();
         // There's a disconnect that happens after you register, not sure how to properly fix this (?)
         // so block for 3 seconds as a temp fix
         await new Promise(r => setTimeout(r, 3000));
         const mediaDevices = await client.page.evaluate(async () => {return await navigator.mediaDevices.enumerateDevices();});
         console.log(mediaDevices);
+	await promise;
     }
     catch (e) {
         console.error(e);
-        await context.close();
+    } finally {
+        ffmpeg.kill();
     }
 }
 
