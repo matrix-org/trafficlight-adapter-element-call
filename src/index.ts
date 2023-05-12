@@ -29,10 +29,11 @@ async function start() {
     const { browser, context } = playwrightObjects;
     const trafficlightUrl = process.env.TRAFFICLIGHT_URL || "http://127.0.0.1:5000";
     const elementCallURL = process.env["BASE_APP_URL"] ?? trafficlightConfig["element-call-instance-url"];
+    const elementCallType = process.env["BASE_APP_TYPE"] ?? trafficlightConfig["element-call-instance-type"];
     const client = new ElementCallTrafficlightClient(trafficlightUrl, context, browser, elementCallURL);
     await addActionsToClient(client);
     console.log("\nThe following actions were found:\n", client.availableActions.join(", "));
-    await client.register();
+    await client.register(elementCallType);
     try {
         await client.newPage();
         const promise = client.start();
