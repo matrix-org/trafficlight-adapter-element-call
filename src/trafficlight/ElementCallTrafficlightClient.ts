@@ -36,7 +36,15 @@ export class ElementCallTrafficlightClient extends TrafficLightClient {
         return this.actionMap.actions;
     }
 
+    async uploadPageVideo() {
+        const upload_name = `screencast_${this.offset}.webm`;
+        return this.uploadFile(await this.page.video().path(), upload_name);
+    }
+
     async newPage() {
+	if (this.page) {
+            await this.uploadPageVideo();
+        }
         const new_page = await this.context.newPage();
         const prefix = "PP"+(this.offset++)+": ";
         new_page.on("console", msg => console.log(prefix + msg.text()));
