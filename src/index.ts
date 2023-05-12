@@ -47,6 +47,7 @@ async function start() {
     catch (e) {
         console.error(e);
     } finally {
+        await client.uploadPageVideo();
         ffmpeg.kill();
     }
 }

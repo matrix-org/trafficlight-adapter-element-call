@@ -142,22 +142,11 @@ export class TrafficLightClient {
                         const files = result["_upload_files"];
                         if (files) {
                             for (var file in files) {
-                                const formData = new FormData();
-                                const filestream = fs.createReadStream(file);
-                                formData.append("file", filestream, { contentType: "application/octet-stream", filename: file });
-                                const fileResponse = await fetch(this.uploadUrl, {
-                                    method: "POST",
-                                    body: formData
-                                });
-                                // At the moment we don't care if we fail to upload
-                                // as the trafficlight server will proceed to error out
-                                // afterwards because it doesn't have the files it needs.
-                                console.log(`Uploaded ${file} with response ${ fileResponse.status}`);
-
+                                // files is map filename -> path on disk
+                                await this.uploadFile(files[file], file);
                             }
                         }
                     }
-
                     
                     const respondResponse = await fetch(this.respondUrl, {
                         method: "POST",
@@ -202,4 +191,17 @@ export class TrafficLightClient {
         return `${this.clientBaseUrl}/respond`;
     }
 
+    async uploadFile(file: string, filename: string) {
+        const formData = new FormData();
+        const filestream = fs.createReadStream(file);
+        formData.append("file", filestream, { contentType: "application/octet-stream", filename: filename });
+        const fileResponse = await fetch(this.uploadUrl, {
+            method: "POST",
+            body: formData
+        });
+        // At the moment we don't care if we fail to upload
+        // as the trafficlight server will proceed to error out
+        // afterwards because it doesn't have the files it needs.
+        console.log(`Uploaded ${file} with response ${ fileResponse.status}`);
+    }
 }

@@ -22,7 +22,6 @@ module.exports = {
     },
 
     "recreate": async ({ data, page, client }: {data: any, client: ElementCallTrafficlightClient, page: Page}) => {
-        // This currently does not work; the client.newPage() method does not update the `page` property of the client.
         if (data["unload_hooks"] == "False") {
             await page.close({ runBeforeUnload: false });
         } else {
