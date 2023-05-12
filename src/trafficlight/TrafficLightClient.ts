@@ -18,7 +18,7 @@ import fetch from "node-fetch";
 import FormData = require("form-data");
 import fs from "fs";
 import * as crypto from "crypto";
-import { BrowserContext, Page } from "playwright-core";
+import { Browser, BrowserContext, Page } from "playwright-core";
 type PollData = {
     action: string;
     data: Record<string, any>;
@@ -60,6 +60,7 @@ export class TrafficLightClient {
     constructor(
         private readonly trafficLightServerURL: string,
         public readonly context: BrowserContext,
+        public readonly browser: Browser,
         protected readonly actionMap: ActionMap = new ActionMap(),
     ) { }
 
@@ -111,8 +112,7 @@ export class TrafficLightClient {
                 } catch (err) {
                     console.error("\tERROR: error when performing action. Taking screenshot", err);
                     try {
-                        await this.page.screenshot({ "path": "error_snapshot.png" } );
-                        await this.context.close();
+                        await this.page.screenshot({ "path": "/video/error_snapshot.png" } );
                     } catch (screen_err) {
                         console.error(screen_err);
                     }
@@ -123,7 +123,7 @@ export class TrafficLightClient {
                     console.log("Total time for login --> complete is", p2 - p1);
                     return;
                 }
-                if (pollData.action === "error") {
+                if (result === "error") {
                     p2 = performance.now();
                     console.log("Total time for login --> error is", p2 - p1);
                     return;
@@ -173,8 +173,8 @@ export class TrafficLightClient {
                 }
             }
         } finally {
-            console.log("Should close context here if we had a reference");
-            this.context.close();
+            await this.context.close();
+            await this.browser.close();
         }
     }
 

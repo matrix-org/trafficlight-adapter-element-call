@@ -23,7 +23,7 @@ export async function addActionsToClient(client: ElementCallTrafficlightClient) 
     glob.sync(`${rootPath}/**/*.js`).forEach(async function( file ) {
         const actions: Record<string, any> = require(path.resolve(file));
         for (const [action, func] of Object.entries(actions)) {
-            client.on(action, async (data, _client) => await func({ data, page: _client.page, context: _client.context, client:_client }));
+            client.on(action, async (data, _client) => await func({ data, browser: _client.browser, page: _client.page, context: _client.context, client:_client }));
         }
     });
 
