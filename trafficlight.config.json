@@ -1,3 +1,4 @@
 {
-    "element-call-instance-url": "http://localhost:4173"
+    "element-call-instance-url": "https://element-call.netlify.app",
+    "element-call-identifier": "staging"
 }

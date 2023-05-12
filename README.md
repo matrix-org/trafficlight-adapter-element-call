@@ -53,38 +53,61 @@ To define a new set of actions (eg: relating to settings):
     The following actions were found:
     login, logout, enable_dehydrated_device, idle, wait, exit, reload, clear_idb_storage, create_room, open_room, accept_invite, send_message, verify_message_in_timeline, verify_last_message_is_utd
     ```
-## Testing against trafficlight
+## Starting trafficlight-adapter-element-call in Docker
+
+We use docker as a simple way to isolate the browser from the various devices (so it doesn't try to use your webcam as an input); as well as have a simple stable setup that's repeatable.
+
+The downside of this is that we need to mount specific devices into the container, and it's currently hard to test within it (the chromium instance isn't visible on the parent's X server - and shouldn't be as it also manipulates the clipboard). 
+
+
+## V4L2Loopback setup:
+
+Ensure v4l2loopback installed and loaded into kernel
+
+Install from their mainline branch, rather than from latest stable; there are bug fixes in exclusive mode from the last ~2yr of development. This should also will let us dynamically create these devices on the fly rather than have a limited number loaded at boot, but we don't currently make use of that.
+
+```
+(sudo) modprobe v4l2loopback devices=4 video_nr=11,12,13,14 exclusive_caps=1,1,1,1 card_label=X_11,X_12,X_13,X_14
+```
+
+Alternatively, insert the following data as files (debian, ydmv):
+
+`/etc/modprobe.d/v4l2loopback.conf`
+
+```
+options v4l2loopback devices=4 video_nr=11,12,13,14 exclusive_caps=1,1,1,1 card_label=X_11,X_12,X_13,X_14
+```
+
+`/etc/modules.conf.d/v4l2loopback.conf`
+
+```
+v4l2loopback
+```
+
+Run the docker containers:
+```
+docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video11 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video11 trafficlight-adapter-element-call:main
+docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video12 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video12 trafficlight-adapter-element-call:main
+docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video13 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 trafficlight-adapter-element-call:main
+```
+You now have 3 of these running on your machine which can step through a TL test.
+
+If you wish to run these against a local copy of element-call or trafficlight; you may need to set --network=host to gain access to eg, "http://localhost:4173", which is where element call runs by default, or http://localhost:5000/ where trafficlight runs. 
+
+You might also want to run them in a `while sleep 5; do docker ...; done` type loop; that will allow them to recycle repeatedly as tests complete and the next test starts.
+
+## Testing the adapter
 
 Trafficlight is a bit oversized for testing adapter changes. There are small python scripts that fake a trafficlight endpoint enough to test specific flows of the adapter; probably easier to use that than have to restart entire test cases in trafficlight repeatedly.
 
+Try using `matrix-org/trafficlight`'s `adapter-manager/element-call-browser.py` for a quick example of this.
 
-## Starting. In Docker. Why would you do this?
+## Starting outside of docker
 
+This is useful if you're testing changes to the adapter and want to see/interact with the browser as it happens.
 
-```
-# build container
+You can start using `yarn run test:trafficlight`.
 
-docker build . -t trafficlight-adapter-element-call:main
-
-# ensure v4l2loopback installed and loaded into kernel
-
-# Install from main rather than from latest stable; there are bug fixes in exclusive mode from the last ~2yr.
-# This also will let us dynamically create these devices on the fly rather than have a limited number loaded at boot.
-
-# (sudo...)
-
-MODULE_OPTIONS="devices=4 video_nr=11,12,13,14 exclusive_caps=1,1,1,1 card_label=X_11,X_12,X_13,X_14"
-modprobe v4l2loopback $MODULE_OPTIONS
-
-# Run the docker containers:
+However: note that this may not work for testing the camera management as the default camera found might not be found - a bit of surgery to your devices might be in order to prevent it loading the wrong ones. Or just accept the video images will be wrong (which is generally OK if you're just using the test adapter manager above.
 
 
-docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video11 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video11 trafficlight-adapter-element-call:main
-docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video12 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video12 trafficlight-adapter-element-call:main
-docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video13 --network=host -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 trafficlight-adapter-element-call:main
-
-You now have 3 of these running on your machine which can step through a TL test.
-
-We don't /need/ --network=host to make this work; at the moment i'm hosting element call and trafficlight on localhost, and haven't got the ability to configure the urls yet, so --network=host to be able to get to localhost:4137 and :5000
-
-```
