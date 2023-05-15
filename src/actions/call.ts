@@ -124,6 +124,29 @@ module.exports = {
         await page.getByTestId("incall_leave").click();
         return "left_call";
     },
+    
+    "set_video_mute": async({ page, data } : { page: Page , data: any}) => {
+        const videoIcon = page.getByTestId("incall_videomute");
+        const nestedSvg = page.locator("xpath=//svg/path");
+        const svg_fill = await videoIcon.locator(nestedSvg).first().getAttribute("fill");
+        let current_mute;
+	if (svg_fill == "white") {
+            current_mute = true;
+        } else if (svg_fill == "#394049") {
+            current_mute = false;
+        } else {
+            throw Exception("unable to determine mute-ness of the call");
+        }
+
+	if ((current_mute && data["video_mute"] == "false") || (
+	    !current_mute && data["video_mute"] == "true")) {
+            await page.getByTestId("incall_videomute").click();
+        }
+            else {
+                console.log("Video muted; leaving alone")
+            }
+       return { "response": "video_mute_toggled", "data": { "previously_muted": current_mute } };
+    },
 
     "start_screenshare": async ({ page }: { page: Page }) => {
        await page.getByTestId("incall_screenshare").click();
