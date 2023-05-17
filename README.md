@@ -84,21 +84,23 @@ options v4l2loopback devices=4 video_nr=11,12,13,14 exclusive_caps=1,1,1,1 card_
 v4l2loopback
 ```
 
-Run the docker containers:
+Run the docker containers in separate terminal windows / screen / tmux:
 ```
-docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video11 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video11 trafficlight-adapter-element-call:main
-docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video12 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video12 trafficlight-adapter-element-call:main
-docker run -it --mount type=bind,source=/home/michaelk/video-out,destination=/video --device /dev/video13 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 trafficlight-adapter-element-call:main
+docker run -it --device /dev/video11 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video11 ghcr.io/vector-im/trafficlight-adapter-element-call:main
+docker run -it --device /dev/video12 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video12 ghcr.io/vector-im/trafficlight-adapter-element-call:main
+docker run -it --device /dev/video13 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 ghcr.io/vector-im/trafficlight-adapter-element-call:main
 ```
-You now have 3 of these running on your machine which can step through a TL test.
+You now have 3 of these running on your machine which can step through one TL test.
 
 If you wish to run these against a local copy of element-call or trafficlight; you may need to set --network=host to gain access to eg, "http://localhost:4173", which is where element call runs by default, or http://localhost:5000/ where trafficlight runs. 
 
-You might also want to run them in a `while sleep 5; do docker ...; done` type loop; that will allow them to recycle repeatedly as tests complete and the next test starts.
+If you're wanting access to screenshots and videos before they're uploaded to trafficlight, you may wish to bind mount "/videos" to a location on your machine, for example `--mount type=bind,source=/home/michaelk/video-out,destination=/video`
+
+If you're running a large set of tests, you will want to wrap these in some sort of restart loop; for example: `while sleep 5; do docker ...; done`. The adapter exits when the test finishes or errors, and so provides a clean slate for the next test to start.
 
 ## Testing the adapter
 
-Trafficlight is a bit oversized for testing adapter changes. There are small python scripts that fake a trafficlight endpoint enough to test specific flows of the adapter; probably easier to use that than have to restart entire test cases in trafficlight repeatedly.
+Trafficlight as a while is a bit oversized for testing adapter changes. There are small python scripts that fake a trafficlight endpoint enough to test specific flows of the adapter; probably easier to use that than have to restart entire test cases in trafficlight repeatedly.
 
 Try using `matrix-org/trafficlight`'s `adapter-manager/element-call-browser.py` for a quick example of this.
 
@@ -106,8 +108,6 @@ Try using `matrix-org/trafficlight`'s `adapter-manager/element-call-browser.py` 
 
 This is useful if you're testing changes to the adapter and want to see/interact with the browser as it happens.
 
-You can start using `yarn run test:trafficlight`.
+You can start using `yarn run test:trafficlight`
 
-However: note that this may not work for testing the camera management as the default camera found might not be found - a bit of surgery to your devices might be in order to prevent it loading the wrong ones. Or just accept the video images will be wrong (which is generally OK if you're just using the test adapter manager above.
-
-
+However: note that this may not work for testing the camera management as running outside of docker means your laptops' camera etc will be available to the test. A bit of surgery to your video devices might be in order to prevent it loading the wrong ones. Or just accept the video images will be wrong (which is generally OK if you're just using this to test changes to the adapter, via the video manager. Make sure to smile during the screenshots!
