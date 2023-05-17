@@ -120,6 +120,11 @@ module.exports = {
 
     },
 
+    "leave_call": async({ page } : { page: Page }) => {
+        await page.getByTestId("incall_leave").click();
+        return "left_call";
+    },
+
     "start_screenshare": async ({ page }: { page: Page }) => {
        await page.getByTestId("incall_screenshare").click();
        return "started_screenshare";
