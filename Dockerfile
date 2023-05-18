@@ -3,7 +3,7 @@ WORKDIR /usr/src/app
 
 COPY package.json yarn.lock tsconfig.json trafficlight.config.json ./
 COPY src ./src
-RUN yarn install && yarn compile
+RUN yarn install && yarn build
 
 
 FROM mcr.microsoft.com/playwright:v1.32.0-jammy
