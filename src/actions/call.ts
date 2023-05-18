@@ -89,14 +89,18 @@ module.exports = {
         const files = {};
         for (const video of await page.getByTestId("videoTile").all()) {
             i++;
-            
+            // Text name of the tile
             const caption = await video.getByTestId("videoTile_caption").textContent();
-            const muted = await video.getByTestId("videoTile_muted").count() != 0;
+            // voice muted icon on the tile
+            const muted = await video.getByTestId("videoTile_muted").isVisible();
+            // avatar being rendered?
+            const avatar = await video.getByTestId("videoTile_avatar").isVisible();
+            // picture of the video tile
             const snapshot_name = `snapshot_video_${call_data_request}_${i}.png`;
             await video.getByTestId("videoTile_video").screenshot({ path: snapshot_name });
             // permit indirect mapping of name to filename, if needed.
             files[snapshot_name] = snapshot_name;
-            videos.push({caption: caption, muted: muted, snapshot: snapshot_name});
+            videos.push({caption: caption, muted: muted, snapshot: snapshot_name, avatar: avatar});
         }
 
         const page_url = page.url();
@@ -125,27 +129,28 @@ module.exports = {
         return "left_call";
     },
     
-    "set_video_mute": async({ page, data } : { page: Page , data: any}) => {
-        const videoIcon = page.getByTestId("incall_videomute");
-        const nestedSvg = page.locator("xpath=//svg/path");
-        const svg_fill = await videoIcon.locator(nestedSvg).first().getAttribute("fill");
-        let current_mute;
-	if (svg_fill == "white") {
-            current_mute = true;
-        } else if (svg_fill == "#394049") {
-            current_mute = false;
-        } else {
-            throw Exception("unable to determine mute-ness of the call");
-        }
+    "set_mute": async({ page, data } : { page: Page , data: any}) => {
+        const videoMuteGoal = data["video_mute"];
+        // TODO: when we handle audio, handle audio muting in a similar way.
+        //  const audioMuteGoal = data["audio_mute"];
 
-	if ((current_mute && data["video_mute"] == "false") || (
-	    !current_mute && data["video_mute"] == "true")) {
-            await page.getByTestId("incall_videomute").click();
+        const videoMuted = await page.getByTestId("icon_videomute").isVisible();
+        const videoUnmuted = await page.getByTestId("icon_video").isVisible();
+	if (videoMuted == videoUnmuted) {
+            throw Error(`VideoMute ${videoMuted} and Video ${videoUnmuted} icons are both visible or not visible.`);
         }
-            else {
-                console.log("Video muted; leaving alone")
-            }
-       return { "response": "video_mute_toggled", "data": { "previously_muted": current_mute } };
+        if (videoUnmuted && videoMuteGoal) {
+            await page.getByTestId("incall_videomute").click();
+            await page.getByTestId("icon_videomute").waitFor();
+	}
+        else if (videoMuted && !videoMuteGoal) {
+            await page.getByTestId("incall_videomute").click();
+            await page.getByTestId("icon_video").waitFor();
+	}
+        else {
+            console.log("Video state as requested, not clicking.");
+        }
+       return { "response": "video_mute_toggled", "data": { "was_video_muted": videoMuted } };
     },
 
     "start_screenshare": async ({ page }: { page: Page }) => {
