@@ -25,9 +25,10 @@ export class ElementCallTrafficlightClient extends TrafficLightClient {
         super(trafficLightServerURL, context, browser);
     }
 
-    async register(version: string): Promise<void> {
+    async register(version: string, url: string): Promise<void> {
         await super.doRegister("element-call", {
-            version: version
+            version: version,
+            url: url
         });
     }
 
