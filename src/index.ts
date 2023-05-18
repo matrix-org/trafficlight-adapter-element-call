@@ -33,7 +33,7 @@ async function start() {
     const client = new ElementCallTrafficlightClient(trafficlightUrl, context, browser, elementCallURL);
     await addActionsToClient(client);
     console.log("\nThe following actions were found:\n", client.availableActions.join(", "));
-    await client.register(elementCallType);
+    await client.register(elementCallType, elementCallURL);
     try {
         await client.newPage();
         const promise = client.start();
