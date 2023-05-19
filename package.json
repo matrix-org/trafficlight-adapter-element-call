@@ -11,7 +11,7 @@
         "lint:js-fix": "eslint --ext .ts --fix ./src/*",
         "lint:types": "tsc --noEmit",
         "test:trafficlight": "yarn build && yarn start",
-        "build": "rm -rf ./bin && tsc && cp -r ./src/images/ ./bin",
+        "build": "rm -rf ./bin && tsc && cp -r ./images/ ./bin",
         "start": "node bin/src/index.js"
     },
     "dependencies": {
