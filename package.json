@@ -10,15 +10,15 @@
         "lint:js": "eslint --ext .ts ./src/*",
         "lint:js-fix": "eslint --ext .ts --fix ./src/*",
         "lint:types": "tsc --noEmit",
-        "test:trafficlight": "rm -rf ./bin && tsc && node bin/src/index.js",
-        "build": "rm -rf ./bin && tsc",
+        "test:trafficlight": "yarn build && yarn start",
+        "build": "rm -rf ./bin && tsc && cp -r ./src/images/ ./bin",
         "start": "node bin/src/index.js"
     },
     "dependencies": {
         "form-data": "^2.3.2",
         "glob": "^8.0.3",
         "node-fetch": "2.6.1",
-        "playwright": "^1.29"
+        "playwright": "1.32"
     },
     "devDependencies": {
         "@types/glob": "^8.0.0",
