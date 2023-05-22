@@ -80,12 +80,11 @@ I'm having problems with something not tidying up cleanly after the
 */
 async function beginffmpeg(v4l2loopbackDevice:string) {
 
-    // TODO: refactor this to create and use a temporary file
-    // passing that location into "actions/video.ts" for updates
-    copyFile("video/images/initial.png", "video/images/target0.png");
-    copyFile("video/images/initial.png", "video/images/target1.png");
+    const mediaStorageFolder = process.env["MEDIA_STORAGE_FOLDER"] ?? trafficlightConfig["media-storage-folder"];
+    copyFile("bin/images/initial.png", mediaStorageFolder+"/target0.png");
+    copyFile("bin/images/initial.png", mediaStorageFolder+"/target1.png");
     const ffmpeg = "/usr/bin/ffmpeg";
-    const args = ["-loglevel", "warning", "-stream_loop", "-1", "-r", "1","-re", "-i", "video/images/target%01d.png", "-vf", "realtime,format=yuv420p", "-f", "v4l2", v4l2loopbackDevice];
+    const args = ["-loglevel", "warning", "-stream_loop", "-1", "-r", "1","-re", "-i", mediaStorageFolder+"/target%01d.png", "-vf", "realtime,format=yuv420p", "-f", "v4l2", v4l2loopbackDevice];
     console.log(`Spawning ${ffmpeg} ${args}`);
     const childProcess = spawn(ffmpeg, args);
     
@@ -108,18 +107,17 @@ async function beginffmpeg(v4l2loopbackDevice:string) {
 
 async function getPlaywrightPage(headless:boolean) {
     
+    const mediaStorageFolder = process.env["MEDIA_STORAGE_FOLDER"] ?? trafficlightConfig["media-storage-folder"];
     const browser = await playwright.chromium.launch({headless: headless,
          args:  [
           "--auto-select-tab-capture-source-by-title=BBC",
           "--enable-logging",
-          "--log-file=/video/chrome.log"
+          "--log-file="+mediaStorageFolder+"/chrome.log"
     ]
     });
-    const context = await browser.newContext({ recordVideo: { "dir": "/video" } });
+    const context = await browser.newContext({ recordVideo: { "dir": mediaStorageFolder } });
     context.grantPermissions(["microphone","camera"]);
 
-    // const screenshare_page = await context.newPage();
-    // await screenshare_page.goto("https://trafficlight/utilties/screenshare_page.htm");
     return {browser, context};
 }
 

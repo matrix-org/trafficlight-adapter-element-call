@@ -19,6 +19,7 @@ import FormData = require("form-data");
 import fs from "fs";
 import * as crypto from "crypto";
 import { Browser, BrowserContext, Page } from "playwright-core";
+import trafficlightConfig from "../../trafficlight.config.json";
 type PollData = {
     action: string;
     data: Record<string, any>;
@@ -86,6 +87,8 @@ export class TrafficLightClient {
     }
 
     async start() {
+        const mediaStorageFolder = process.env["MEDIA_STORAGE_FOLDER"] ?? trafficlightConfig["media-storage-folder"];
+
         let p1, p2;
         try {
             while (true) {
@@ -112,7 +115,7 @@ export class TrafficLightClient {
                 } catch (err) {
                     console.error("\tERROR: error when performing action. Taking screenshot", err);
                     try {
-                        await this.page.screenshot({ "path": "/video/error_snapshot.png" } );
+                        await this.page.screenshot({ "path": mediaStorageFolder+"/error_snapshot.png" } );
                     } catch (screen_err) {
                         console.error(screen_err);
                     }
