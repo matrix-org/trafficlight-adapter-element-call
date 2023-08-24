@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { spawn } from "child_process";
-import { copyFile } from "fs/promises";
+import { copyFile, open, readFile } from "fs/promises";
 import playwright from "playwright";
 import { ElementCallTrafficlightClient } from "./trafficlight";
 import trafficlightConfig from "../trafficlight.config.json";
@@ -24,7 +24,12 @@ import { addActionsToClient } from "./populate";
 async function start() {
     console.log("Starting Element Call trafficlight adapter");
     const headless = process.env.HEADLESS == "true" || false;
-    const ffmpeg = await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE);
+    let ffmpeg = null;
+    if (process.env["USE_FFMPEG"] ?? trafficlightConfig["use-ffmpeg"]) {
+        ffmpeg = await beginffmpeg(process.env.TRAFFICLIGHT_LOOPBACK_DEVICE);
+    } else {
+        await initChromeCamera();
+    }
     const playwrightObjects = await getPlaywrightPage(headless);
     const { browser, context } = playwrightObjects;
     const trafficlightUrl = process.env.TRAFFICLIGHT_URL || "http://127.0.0.1:5000";
@@ -48,7 +53,9 @@ async function start() {
         console.error(e);
     } finally {
         await client.uploadPageVideo();
-        ffmpeg.kill();
+        if (process.env["USE_FFMPEG"] ?? trafficlightConfig["use-ffmpeg"]) {
+            ffmpeg.kill();
+        }
     }
 }
 
@@ -79,7 +86,6 @@ I'm having problems with something not tidying up cleanly after the
 
 */
 async function beginffmpeg(v4l2loopbackDevice:string) {
-
     const mediaStorageFolder = process.env["MEDIA_STORAGE_FOLDER"] ?? trafficlightConfig["media-storage-folder"];
     copyFile("bin/images/initial.png", mediaStorageFolder+"/target0.png");
     copyFile("bin/images/initial.png", mediaStorageFolder+"/target1.png");
@@ -105,16 +111,32 @@ async function beginffmpeg(v4l2loopbackDevice:string) {
     return childProcess;
 }
 
+async function initChromeCamera() {
+    const mediaStorageFolder = process.env["MEDIA_STORAGE_FOLDER"] ?? trafficlightConfig["media-storage-folder"];
+    const fd = await open(mediaStorageFolder+"/video.y4m","w");
+    const buffer = await readFile("bin/images/initial.y4m");
+    await fd.writeFile(buffer);
+    await fd.close();
+}
+
 async function getPlaywrightPage(headless:boolean) {
     
     const mediaStorageFolder = process.env["MEDIA_STORAGE_FOLDER"] ?? trafficlightConfig["media-storage-folder"];
-    const browser = await playwright.chromium.launch({headless: headless,
-         args:  [
+    let args = [
           "--auto-select-tab-capture-source-by-title=BBC",
           "--enable-logging",
           "--log-file="+mediaStorageFolder+"/chrome.log"
-    ]
-    });
+    ];
+    const use_ffmpeg = process.env["USE_FFMPEG"] ?? trafficlightConfig["use-ffmpeg"];
+    if (!use_ffmpeg) {
+       args = args.concat([
+          "--use-fake-device-for-media-stream",
+          "--use-file-for-fake-video-capture="+mediaStorageFolder +"/video.y4m"
+       ]);
+    }
+    console.log("Using args" + args);
+    const browser = await playwright.chromium.launch({headless: headless, args: args });
+
     const context = await browser.newContext({ recordVideo: { "dir": mediaStorageFolder } });
     context.grantPermissions(["microphone","camera"]);
 

@@ -1,5 +1,6 @@
 {
-    "element-call-instance-url": "https://element-call.netlify.app",
-    "element-call-identifier": "staging",
-    "media-storage-folder": "/video"
+    "element-call-instance-url": "https://call.element.io",
+    "element-call-identifier": "live",
+    "media-storage-folder": "/video",
+    "use-ffmpeg": false
 }
