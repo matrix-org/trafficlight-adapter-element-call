@@ -57,10 +57,22 @@ To define a new set of actions (eg: relating to settings):
 
 We use docker as a simple way to isolate the browser from the various devices (so it doesn't try to use your webcam as an input); as well as have a simple stable setup that's repeatable.
 
-The downside of this is that we need to mount specific devices into the container, and it's currently hard to test within it (the chromium instance isn't visible on the parent's X server - and shouldn't be as it also manipulates the clipboard). 
+This has a downside that we make it hard to see the chromium instance running within the docker container as it doesn't have access to the hosts' desktop. This is also good as part of it's task is to manipulate your clipboard to copy/paste, so this isn't a bad thing ^^
 
 
-## V4L2Loopback setup:
+
+Run the docker containers in separate terminal windows / screen / tmux:
+```
+docker run -it ghcr.io/vector-im/trafficlight-adapter-element-call:main
+```
+
+You will want to run at least 3 of these to handle most TL tests.
+
+
+
+## (Legacy) V4L2Loopback setup:
+
+Using v4l2loopback has a downside -  we need to mount specific devices into the container, and it's currently hard to test within it (the chromium instance isn't visible on the parent's X server - and shouldn't be as it also manipulates the clipboard). 
 
 Ensure v4l2loopback installed and loaded into kernel
 
@@ -91,6 +103,8 @@ docker run -it --device /dev/video12 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video1
 docker run -it --device /dev/video13 -e TRAFFICLIGHT_LOOPBACK_DEVICE=/dev/video13 ghcr.io/vector-im/trafficlight-adapter-element-call:main
 ```
 You now have 3 of these running on your machine which can step through one TL test.
+
+## Legacy and Current general notes
 
 If you wish to run these against a local copy of element-call or trafficlight; you may need to set --network=host to gain access to eg, "http://localhost:4173", which is where element call runs by default, or http://localhost:5000/ where trafficlight runs. 
 
