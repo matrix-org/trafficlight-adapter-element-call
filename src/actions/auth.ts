@@ -26,7 +26,6 @@ module.exports = {
         await page.getByTestId("usermenu_open").click(); 
         await page.getByTestId("usermenu_user").click();
         await page.getByTestId("profile_displayname").fill(data["display_name"]);
-        await page.getByTestId("profile_submit").click();
         return "set_display_name";
     }
 };
