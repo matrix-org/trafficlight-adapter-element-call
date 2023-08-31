@@ -24,8 +24,8 @@ module.exports = {
     },
     "set_display_name": async ({ page, data }: { page: Page, data: any }) => {
         // prefer usermenu over incall_settings.
-        const usermenu_promise = page.getByTestId("usermenu_open").waitFor().then((value) => { return true });
-        const incall_settings_promise = page.getByTestId("incall_settings").waitFor().then((value) => { return false });
+        const usermenu_promise = page.getByTestId("usermenu_open").waitFor().then(() => { return true ;});
+        const incall_settings_promise = page.getByTestId("incall_settings").waitFor().then(() => { return false; });
         const usermenu =  await Promise.race([
             usermenu_promise,
             incall_settings_promise

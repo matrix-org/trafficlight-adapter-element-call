@@ -54,14 +54,14 @@ module.exports = {
         // increment i each screenshot we take
         let i = 0;
         call_data_request++;
-        const audioMutedPromise = page.getByTestId("icon_audiomute").waitFor().then((value) => { return true });
-        const audioUnmutedPromise = page.getByTestId("icon_audio").waitFor().then((value) => { return false });
+        const audioMutedPromise = page.getByTestId("icon_audiomute").waitFor().then(() => { return true; });
+        const audioUnmutedPromise = page.getByTestId("icon_audio").waitFor().then(() => { return false; });
         const audioMuted = await Promise.race([
             audioMutedPromise,
             audioUnmutedPromise
         ]);
-        const videoMutedPromise = page.getByTestId("icon_videomute").waitFor().then((value) => { return true });
-        const videoUnmutedPromise = page.getByTestId("icon_video").waitFor().then((value) => { return false });
+        const videoMutedPromise = page.getByTestId("icon_videomute").waitFor().then(() => { return true; });
+        const videoUnmutedPromise = page.getByTestId("icon_video").waitFor().then(() => { return false; });
         const videoMuted = await Promise.race([
             videoMutedPromise,
             videoUnmutedPromise
