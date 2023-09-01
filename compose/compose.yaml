@@ -4,12 +4,12 @@ services:
       trafficlight:
         condition: service_started
     environment:
-      BASE_APP_URL: https://host.docker.internal:4173/
-      TRAFFICLIGHT_URL: http://trafficlight:5000/
+      BASE_APP_URL: https://ec:4173/
+      TRAFFICLIGHT_URL: http://trafficlight:5000
     image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-13
     restart: always
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "ec:host-gateway"
     volumes:
     - source: ./ec-store-1
       target: /video
@@ -19,12 +19,12 @@ services:
       trafficlight:
         condition: service_started
     environment:
-      BASE_APP_URL: https://host.docker.internal:4173/
-      TRAFFICLIGHT_URL: http://trafficlight:5000/
+      BASE_APP_URL: https://ec:4173/
+      TRAFFICLIGHT_URL: http://trafficlight:5000
     image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-13
     restart: always
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "ec:host-gateway"
     volumes:
     - source: ./ec-store-2
       target: /video
