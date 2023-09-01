@@ -137,7 +137,7 @@ async function getPlaywrightPage(headless:boolean) {
     console.log("Using args" + args);
     const browser = await playwright.chromium.launch({headless: headless, args: args });
 
-    const context = await browser.newContext({ recordVideo: { "dir": mediaStorageFolder } });
+    const context = await browser.newContext({ ignoreHTTPSErrors: true, recordVideo: { "dir": mediaStorageFolder } });
     context.grantPermissions(["microphone","camera"]);
 
     return {browser, context};

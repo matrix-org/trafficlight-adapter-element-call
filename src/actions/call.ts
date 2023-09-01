@@ -54,7 +54,18 @@ module.exports = {
         // increment i each screenshot we take
         let i = 0;
         call_data_request++;
-        const muted = await page.getByTestId("videoTile_muted").count() != 0;
+        const audioMutedPromise = page.getByTestId("icon_audiomute").waitFor().then(() => { return true; });
+        const audioUnmutedPromise = page.getByTestId("icon_audio").waitFor().then(() => { return false; });
+        const audioMuted = await Promise.race([
+            audioMutedPromise,
+            audioUnmutedPromise
+        ]);
+        const videoMutedPromise = page.getByTestId("icon_videomute").waitFor().then(() => { return true; });
+        const videoUnmutedPromise = page.getByTestId("icon_video").waitFor().then(() => { return false; });
+        const videoMuted = await Promise.race([
+            videoMutedPromise,
+            videoUnmutedPromise
+        ]);
         const snapshot_name = `snapshot_video_${call_data_request}_${i}.png`;
         await page.getByTestId("preview_video").screenshot({ path: snapshot_name });
         const files = {};
@@ -72,7 +83,7 @@ module.exports = {
         const invite_url = await temp_page.evaluate(() => document.querySelector("div").textContent);
         await temp_page.close();
 	const call_name = await page.getByTestId("roomHeader_roomName").textContent();
-        return { "response": "get_lobby_data", "data": { "muted": muted, "snapshot": snapshot_name, "page_url": page_url, "invite_url": invite_url, "call_name": call_name }, "_upload_files": files };
+        return { "response": "get_lobby_data", "data": { "videomuted": videoMuted, "muted": audioMuted, "snapshot": snapshot_name, "page_url": page_url, "invite_url": invite_url, "call_name": call_name }, "_upload_files": files };
 
     },
     "lobby_join": async ({ page, data }: { page: Page, data: any }) => {
@@ -106,8 +117,7 @@ module.exports = {
         const page_url = page.url();
 
 	// Open the settings menu and click the invite link
-	await page.getByTestId("call_more").click();
-	await page.getByTestId("call_moreInvite").click();
+	await page.getByTestId("call_invite").click();
 	await page.getByTestId("modal_inviteLink").click();
 	await page.getByTestId("modal_close").click();
       
