@@ -40,7 +40,7 @@ export class ElementCallTrafficlightClient extends TrafficLightClient {
     async uploadPageVideo() {
         const upload_name = `screencast_${this.offset}.webm`;
         if (this.page) {
-	    this.uploadFile(await this.page.video().path(), upload_name);
+          this.uploadFile(await this.page.video().path(), upload_name);
         } else {
             console.log("Unable to upload file, no current page");
         }
