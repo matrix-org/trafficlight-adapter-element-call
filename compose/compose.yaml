@@ -6,7 +6,7 @@ services:
     environment:
       BASE_APP_URL: https://host.docker.internal:4173/
       TRAFFICLIGHT_URL: http://trafficlight:5000/
-    image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-12
+    image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-13
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -21,7 +21,7 @@ services:
     environment:
       BASE_APP_URL: https://host.docker.internal:4173/
       TRAFFICLIGHT_URL: http://trafficlight:5000/
-    image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-12
+    image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-13
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
