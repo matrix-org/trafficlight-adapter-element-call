@@ -54,14 +54,14 @@ module.exports = {
         // increment i each screenshot we take
         let i = 0;
         call_data_request++;
-        const audioMutedPromise = page.getByTestId("icon_audiomute").waitFor().then(() => { return true; });
-        const audioUnmutedPromise = page.getByTestId("icon_audio").waitFor().then(() => { return false; });
+        const audioMutedPromise = page.getByRole("button", { name: "Unmute microphone"}).waitFor().then(() => { return true; });
+        const audioUnmutedPromise = page.getByRole("button", {name: "Mute microphone"}).waitFor().then(() => { return false; });
         const audioMuted = await Promise.race([
             audioMutedPromise,
             audioUnmutedPromise
         ]);
-        const videoMutedPromise = page.getByTestId("icon_videomute").waitFor().then(() => { return true; });
-        const videoUnmutedPromise = page.getByTestId("icon_video").waitFor().then(() => { return false; });
+        const videoMutedPromise = page.getByRole("button", { name: "Start video"}).waitFor().then(() => { return true; });
+        const videoUnmutedPromise = page.getByRole("button", { name: "Stop video" }).waitFor().then(() => { return false; });
         const videoMuted = await Promise.race([
             videoMutedPromise,
             videoUnmutedPromise
@@ -72,16 +72,19 @@ module.exports = {
 	files[snapshot_name] = snapshot_name;
 
         const page_url = page.url();
+	await page.getByTestId("open_share_modal").click();
+	await page.getByTestId("modal_inviteLink").click();
 	
-	await page.getByTestId("lobby_inviteLink").click();
-
-	// Scream now: We can't access the clipboard directly, but we can make a new page; paste into it; then read what the output was. 
+        // Scream now: We can't access the clipboard directly, but we can make a new page; paste into it; then read what the output was. 
 	const temp_page = await context.newPage();
         await temp_page.setContent("<div data-testid=paste contenteditable></div>");
         await temp_page.getByTestId("paste").focus();
         await temp_page.keyboard.press("Control+KeyV");
         const invite_url = await temp_page.evaluate(() => document.querySelector("div").textContent);
         await temp_page.close();
+        // End screaming
+	await page.getByTestId("modal_close").click();
+
 	const call_name = await page.getByTestId("roomHeader_roomName").textContent();
         return { "response": "get_lobby_data", "data": { "videomuted": videoMuted, "muted": audioMuted, "snapshot": snapshot_name, "page_url": page_url, "invite_url": invite_url, "call_name": call_name }, "_upload_files": files };
 

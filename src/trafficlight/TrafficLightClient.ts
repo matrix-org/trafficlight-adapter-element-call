@@ -110,7 +110,6 @@ export class TrafficLightClient {
                         console.log("\tWARNING: unknown action ", action);
                         continue;
                     }
-                    console.log(`\tAction for "${action}" found in action-map  ✔`);
                     result = await callback(data, this);
                 } catch (err) {
                     console.error("\tERROR: error when performing action. Taking screenshot", err);
@@ -194,7 +193,16 @@ export class TrafficLightClient {
         return `${this.clientBaseUrl}/respond`;
     }
 
+
     async uploadFile(file: string, filename: string) {
+        try {
+            await this._uploadFile(file, filename);
+        } catch (e) {
+            await this._uploadFile(file, filename);
+        }
+    } 
+    async _uploadFile(file: string, filename: string) {
+        console.log(`Attemping upload of ${file} / ${filename}`);
         const formData = new FormData();
         const filestream = fs.createReadStream(file);
         formData.append("file", filestream, { contentType: "application/octet-stream", filename: filename });

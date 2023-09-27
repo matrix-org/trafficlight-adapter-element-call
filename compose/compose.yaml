@@ -6,7 +6,7 @@ services:
     environment:
       BASE_APP_URL: https://ec:4173/
       TRAFFICLIGHT_URL: http://trafficlight:5000
-    image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-13
+    build: ../
     restart: always
     extra_hosts:
       - "ec:host-gateway"
@@ -21,7 +21,7 @@ services:
     environment:
       BASE_APP_URL: https://ec:4173/
       TRAFFICLIGHT_URL: http://trafficlight:5000
-    image: ghcr.io/vector-im/trafficlight-adapter-element-call:pr-13
+    build: ../
     restart: always
     extra_hosts:
       - "ec:host-gateway"
