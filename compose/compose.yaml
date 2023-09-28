@@ -25,5 +25,31 @@ services:
     - source: ./ec-store-2
       target: /video
       type: bind
+  ec-3:
+    environment:
+      BASE_APP_URL: https://ec:4173/
+      TRAFFICLIGHT_URL: http://trafficlight:5000
+    build: ../
+    restart: always
+    extra_hosts:
+      - "ec:host-gateway"
+      - "trafficlight:host-gateway"
+    volumes:
+    - source: ./ec-store-3
+      target: /video
+      type: bind
+  ec-4:
+    environment:
+      BASE_APP_URL: https://ec:4173/
+      TRAFFICLIGHT_URL: http://trafficlight:5000
+    build: ../
+    restart: always
+    extra_hosts:
+      - "ec:host-gateway"
+      - "trafficlight:host-gateway"
+    volumes:
+    - source: ./ec-store-4
+      target: /video
+      type: bind
 version: '3.9'
 
