@@ -1,0 +1,41 @@
+services:
+  ec-1:
+    depends_on:
+      trafficlight:
+        condition: service_started
+    environment:
+      BASE_APP_URL: https://ec:4173/
+      TRAFFICLIGHT_URL: http://trafficlight:5000
+    build: ../
+    restart: always
+    extra_hosts:
+      - "ec:host-gateway"
+    volumes:
+    - source: ./ec-store-1
+      target: /video
+      type: bind
+  ec-2:
+    depends_on:
+      trafficlight:
+        condition: service_started
+    environment:
+      BASE_APP_URL: https://ec:4173/
+      TRAFFICLIGHT_URL: http://trafficlight:5000
+    build: ../
+    restart: always
+    extra_hosts:
+      - "ec:host-gateway"
+    volumes:
+    - source: ./ec-store-2
+      target: /video
+      type: bind
+  trafficlight:
+    image: ghcr.io/matrix-org/trafficlight:main
+    ports:
+      - "5000:5000"
+    volumes:
+    - source: ./trafficlight.json
+      target: /app/instance/trafficlight.json
+      type: bind
+version: '3.9'
+
