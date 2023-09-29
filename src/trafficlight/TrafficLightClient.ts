@@ -125,11 +125,6 @@ export class TrafficLightClient {
                     console.log("Total time for login --> complete is", p2 - p1);
                     return;
                 }
-                if (result === "error") {
-                    p2 = performance.now();
-                    console.log("Total time for login --> error is", p2 - p1);
-                    return;
-                }
                 if (result) {
                     var body;
                     if (typeof result === "string") {
@@ -161,6 +156,11 @@ export class TrafficLightClient {
                     if (respondResponse.status !== 200) {
                         throw new Error(`respond failed with ${respondResponse.status}`);
                     }
+                }
+                if (result === "error") {
+                    p2 = performance.now();
+                    console.log("Total time for login --> error is", p2 - p1);
+                    return;
                 }
             }
         } finally {
