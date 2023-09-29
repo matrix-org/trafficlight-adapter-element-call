@@ -118,7 +118,27 @@ export class TrafficLightClient {
                     } catch (screen_err) {
                         console.error(screen_err);
                     }
-                    result = "error";
+                    p2 = performance.now();
+                    console.log("Total time for login --> error is", p2 - p1);
+                    body = JSON.stringify( {
+                        "error": { 
+                            "type": "adapter",
+                            "details": err.stack,
+                            "path": "tbd" 
+                        }
+                    });
+                    const errorResponse = await fetch(this.errorUrl, {
+                        method: "POST",
+                        body, 
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    if (errorResponse.status !== 200) {
+                        throw new Error(`respond failed with ${errorResponse.status}`);
+                    }
+                    return;
                 }
                 if (pollData.action === "exit") {
                     p2 = performance.now();
@@ -157,11 +177,6 @@ export class TrafficLightClient {
                         throw new Error(`respond failed with ${respondResponse.status}`);
                     }
                 }
-                if (result === "error") {
-                    p2 = performance.now();
-                    console.log("Total time for login --> error is", p2 - p1);
-                    return;
-                }
             }
         } finally {
             await this.context.close();
@@ -191,6 +206,10 @@ export class TrafficLightClient {
 
     get respondUrl() {
         return `${this.clientBaseUrl}/respond`;
+    }
+
+    get errorUrl() {
+        return `${this.clientBaseUrl}/error`;
     }
 
 
