@@ -83,7 +83,6 @@ module.exports = {
         const invite_url = await temp_page.evaluate(() => document.querySelector("div").textContent);
         await temp_page.close();
         // End screaming
-	await page.getByTestId("modal_close").click();
 
 	const call_name = await page.getByTestId("roomHeader_roomName").textContent();
         return { "response": "get_lobby_data", "data": { "videomuted": videoMuted, "muted": audioMuted, "snapshot": snapshot_name, "page_url": page_url, "invite_url": invite_url, "call_name": call_name }, "_upload_files": files };
